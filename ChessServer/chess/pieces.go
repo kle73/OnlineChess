@@ -2,6 +2,7 @@ package chess
 
 import (
   "math"
+  "fmt"
 )
 
 type Piece interface {
@@ -351,6 +352,106 @@ func (q *Queen) getPossibleSteps(g Game) map[string]Position {
         steps[key] = position
       }
     }
+    //dont jumpe
+    for _, piece := range g.pieces {
+      if piece.getPosition() != q.getPosition() {
+        if piece.getPosition().Num > q.getPosition().Num && piece.getPosition().Char == q.getPosition().Char {
+          for key, p := range g.positions{
+            for _, pos := range steps {
+              if pos == p {
+                if p.Num > piece.getPosition().Num && p.Char == q.getPosition().Char{
+                  delete(steps, key)
+                }
+              }
+            }
+          }
+        } else if piece.getPosition().Num < q.getPosition().Num && piece.getPosition().Char == q.getPosition().Char {
+            for key, p := range g.positions{
+              for _, pos := range steps {
+                if pos == p {
+                  if p.Num < piece.getPosition().Num && p.Char == q.getPosition().Char{
+                    delete(steps, key)
+                  }
+                }
+              }
+            }
+        } else if piece.getPosition().Char < q.getPosition().Char && piece.getPosition().Num == q.getPosition().Num {
+            for key, p := range g.positions{
+              for _, pos := range steps {
+                if pos == p {
+                  if p.Char < piece.getPosition().Char && p.Num == q.getPosition().Num{
+                    delete(steps, key)
+                  }
+                }
+              }
+            }
+        } else if piece.getPosition().Char > q.getPosition().Char && piece.getPosition().Num == q.getPosition().Num {
+            for key, p := range g.positions{
+              for _, pos := range steps {
+                if pos == p {
+                  if p.Char > piece.getPosition().Char && p.Num == q.getPosition().Num{
+                    delete(steps, key)
+                  }
+                }
+              }
+            }
+          }
+      }
+    }
+    for _, piece := range g.pieces{
+      if piece.getPosition() != q.getPosition(){
+        for _, step := range steps {
+          if step == piece.getPosition(){
+
+  				  var charDifference int = piece.getPosition().Char - q.getPosition().Char
+  				  var numDifference int = piece.getPosition().Num - q.getPosition().Num
+
+  					if charDifference <= -1 && numDifference >= 1 {
+              for _, position := range g.positions{
+  				      for stepKey, step := range steps {
+  								if step == position {
+  								  if position.Char - q.getPosition().Char < charDifference && position.Num - q.getPosition().Num > numDifference {
+  								    delete(steps, stepKey)
+  									}
+  								}
+  							}
+  						}
+  					}	else if charDifference >= 1 && numDifference >= 1 {
+              for _, position := range g.positions{
+  				      for stepKey, step := range steps {
+  								if step == position {
+  								  if position.Char - q.getPosition().Char > charDifference && position.Num - q.getPosition().Num > numDifference {
+  								    delete(steps, stepKey)
+  									}
+  								}
+  							}
+  						}
+  					}	else if charDifference <= -1 && numDifference <= -1 {
+              for _, position := range g.positions{
+  				      for stepKey, step := range steps {
+  								if step == position {
+  								  if position.Char - q.getPosition().Char < charDifference && position.Num - q.getPosition().Num < numDifference {
+  								    delete(steps, stepKey)
+  									}
+  								}
+  							}
+  						}
+            }	else if charDifference >= 1 && numDifference <= -1 {
+              for _, position := range g.positions{
+  				      for stepKey, step := range steps {
+  								if step == position {
+  								  if position.Char - q.getPosition().Char > charDifference && position.Num - q.getPosition().Num < numDifference {
+  								    delete(steps, stepKey)
+  									}
+  								}
+  							}
+  						}
+  					}
+  				}
+  			}
+  		}
+  	}
+  fmt.Println(steps)
   return steps
 }
 func (q *Queen) getPosition() Position {
