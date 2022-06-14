@@ -151,8 +151,55 @@ func (r *Rook) getPossibleSteps(g Game) map[string]Position {
         steps[key] = position
       }
     }
+  //dont jumpe
+  for _, piece := range g.pieces {
+    if piece.getPosition() != r.getPosition() {
+      if piece.getPosition().Num > r.getPosition().Num && piece.getPosition().Char == r.getPosition().Char {
+        for key, p := range g.positions{
+          for _, pos := range steps {
+            if pos == p {
+              if p.Num > piece.getPosition().Num{
+                delete(steps, key)
+              }
+            }
+          }
+        }
+      } else if piece.getPosition().Num < r.getPosition().Num && piece.getPosition().Char == r.getPosition().Char {
+          for key, p := range g.positions{
+            for _, pos := range steps {
+              if pos == p {
+                if p.Num < piece.getPosition().Num{
+                  delete(steps, key)
+                }
+              }
+            }
+          }
+      } else if piece.getPosition().Char < r.getPosition().Char && piece.getPosition().Num == r.getPosition().Num {
+          for key, p := range g.positions{
+            for _, pos := range steps {
+              if pos == p {
+                if p.Char < piece.getPosition().Char{
+                  delete(steps, key)
+                }
+              }
+            }
+          }
+      } else if piece.getPosition().Char > r.getPosition().Char && piece.getPosition().Num == r.getPosition().Num {
+          for key, p := range g.positions{
+            for _, pos := range steps {
+              if pos == p {
+                if p.Char > piece.getPosition().Char{
+                  delete(steps, key)
+                }
+              }
+            }
+          }
+        }
+    }
+  }
   return steps
 }
+
 func (r *Rook) getPosition() Position {
   return r.position
 }
