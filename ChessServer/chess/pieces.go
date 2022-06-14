@@ -169,10 +169,64 @@ type Pawn struct{
   color string
 }
 
-func (p *Pawn) getPossibleSteps(g Game) map[string]Position {
-  var steps = map[string]Position{"A3": Position{65,3}}
+func (pawn *Pawn) getPossibleSteps(g Game) map[string]Position {
+  var steps = map[string]Position{}
+  position := pawn.getPosition()
+  var numberSign int = 1;
+  var indicator int = 7;
+  if pawn.getColor()  == "white"{
+    numberSign = -1;
+    indicator = 2;
+  }
+
+  if position.Num == indicator {
+    for key, p := range g.positions{
+      if p.Char == position.Char && p.Num + (numberSign * 1) == position.Num {
+        steps[key] = p
+      } else if p.Char == position.Char && p.Num + (numberSign * 2) == position.Num {
+        steps[key] = p
+        //check for jumped
+        for _, piece := range g.pieces {
+          if piece.getPosition().Char == p.Char && piece.getPosition().Num == p.Num + (numberSign * 1) {
+            delete(steps, key)
+          }
+        }
+      }
+    }
+  } else {
+    for key, p := range g.positions{
+      if p.Char == position.Char && p.Num + (numberSign * 1) == position.Num {
+        steps[key] = p
+      }
+    }
+  }
+
+  for _, piece := range g.pieces {
+    //stellt sicher, dass der bauer nur dann zur seite ziehen kann, wennd ort ein Gegner steht
+    for key, position := range steps {
+      if piece.getPosition() == position {
+        delete(steps, key)
+      }
+    }
+    //stellt sicher, dass der bauer nur zur seite ziehen kann, wenn dort ein gegner steht
+    for key, p := range g.positions {
+      if p == piece.getPosition() {
+        if piece.getPosition().Char - 1 == position.Char && piece.getPosition().Num + (numberSign* 1) == position.Num {
+          if piece.getColor() != pawn.getColor() {
+            steps[key] = piece.getPosition()
+          }
+        } else if piece.getPosition().Char + 1 == position.Char && piece.getPosition().Num + (numberSign * 1) == position.Num{
+          if piece.getColor() != pawn.getColor() {
+            steps[key] = piece.getPosition()
+          }
+        }
+      }
+    }
+  }
   return steps
 }
+
+
 func (p *Pawn) getPosition() Position {
   return p.position
 }
