@@ -1,4 +1,4 @@
-import socket
+"""import socket
 import json
 import threading
 
@@ -25,4 +25,12 @@ while True:
     turn = json.dumps(turn)
     client.send(bytes(turn, 'UTF-8'))
     ans = client.recv(64).decode('UTF-8')
-    print(ans)
+    print(ans)"""
+
+
+s = "white CHECKMATE"
+p = "jddsd CHECK"
+list = [s, p]
+for i in list:
+    if "CHECKMATE" in i:
+        print(i)

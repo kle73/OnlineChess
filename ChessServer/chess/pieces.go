@@ -2,13 +2,13 @@ package chess
 
 import (
   "math"
-  "fmt"
 )
 
 type Piece interface {
   getPosition() Position
   setPosition(position Position)
   getColor() string
+  getType() string
   getPossibleSteps(g Game) map[string]Position
 }
 type Bishop struct{
@@ -88,6 +88,9 @@ func (bp *Bishop) setPosition(position Position) {
 func (b *Bishop) getColor() string {
   return b.color
 }
+func (b *Bishop) getType() string {
+  return "bishop"
+}
 
 
 
@@ -135,6 +138,9 @@ func (kp *Knight) setPosition(position Position) {
 }
 func (k *Knight) getColor() string {
   return k.color
+}
+func (k *Knight) getType() string {
+  return "knight"
 }
 
 
@@ -210,6 +216,9 @@ func (r *Rook) setPosition(position Position) {
 func (r *Rook) getColor() string {
   return r.color
 }
+func (r *Rook) getType() string {
+  return "rook"
+}
 
 
 type Pawn struct{
@@ -284,6 +293,9 @@ func (pp *Pawn) setPosition(position Position) {
 func (p *Pawn) getColor() string {
   return p.color
 }
+func (p *Pawn) getType() string {
+  return "pawn"
+}
 
 
 type King struct{
@@ -333,6 +345,9 @@ func (kp *King) setPosition(position Position) {
 }
 func (k *King) getColor() string {
   return k.color
+}
+func (k *King) getType() string {
+  return "king"
 }
 
 
@@ -451,7 +466,6 @@ func (q *Queen) getPossibleSteps(g Game) map[string]Position {
   			}
   		}
   	}
-  fmt.Println(steps)
   return steps
 }
 func (q *Queen) getPosition() Position {
@@ -462,4 +476,7 @@ func (qp *Queen) setPosition(position Position) {
 }
 func (q *Queen) getColor() string {
   return q.color
+}
+func (q *Queen) getType() string {
+  return "queen"
 }

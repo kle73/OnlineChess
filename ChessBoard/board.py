@@ -28,8 +28,26 @@ img = pygame.transform.scale(img, (80, 80))
 def get_pieces(buttons):
     pieces = []
     for button in buttons:
-        if button.value[1] == "1" or button.value[1] == "2" or button.value[1] == "7" or button.value[1] == "8":
-            pieces.append(Piece(img, (button.x, button.y), button.value))
+        color = ""
+        if button.value[1] == "1" or button.value[1] == "8":
+
+            color = "white" if button.value[1] == "1" else "black"
+
+            if button.value[0] == "A" or button.value[0] == "H":
+                pieces.append(Piece(img, (button.x, button.y), button.value, color, "rook"))
+            elif button.value[0] == "B" or button.value[0] == "G":
+                pieces.append(Piece(img, (button.x, button.y), button.value, color, "knight"))
+            elif button.value[0] == "C" or button.value[0] == "F":
+                pieces.append(Piece(img, (button.x, button.y), button.value, color, "bishop"))
+            elif button.value[0] == "D":
+                pieces.append(Piece(img, (button.x, button.y), button.value, color, "queen"))
+            elif button.value[0] == "E":
+                pieces.append(Piece(img, (button.x, button.y), button.value, color, "king"))
+
+        elif button.value[1] == "2":
+            pieces.append(Piece(img, (button.x, button.y), button.value, "white", "pawn"))
+        elif button.value[1] == "7":
+            pieces.append(Piece(img, (button.x, button.y), button.value, "black", "pawn"))
     return pieces
 
 
@@ -97,7 +115,8 @@ def receive(buttons, pieces, turn):
     while True:
         ans = client.recv(64).decode('UTF-8')
 
-        if ans == "SET":
+        if ans == "SET" or ans == "SET CHECK":
+            print(ans)
             for piece in pieces:
                 if piece.value == turn["pos1"]:
                     for button in buttons:
@@ -106,6 +125,8 @@ def receive(buttons, pieces, turn):
                             piece.pos = newPos
                             piece.value = button.value
             continue
+        elif "CHECKMATE" in ans:
+            print(ans)
         try:
             ans = json.loads(ans)
             for piece in pieces:
@@ -126,6 +147,7 @@ def main(buttons, draw_nums, draw_chars, client, color):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+                sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 for button in buttons:
@@ -148,6 +170,7 @@ def main(buttons, draw_nums, draw_chars, client, color):
         draw_GRID
         for piece in pieces:
             screen.blit(piece.img, piece.pos)
+            message_to_screen(piece.type, (255, 0, 0), piece.pos, Font)
         pygame.display.update()
 
         if color == "black" and first:
