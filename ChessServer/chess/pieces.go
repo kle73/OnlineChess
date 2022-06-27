@@ -11,6 +11,7 @@ type Piece interface {
   getType() string
   getPossibleSteps(g Game) map[string]Position
 }
+
 type Bishop struct{
   position Position
   color string

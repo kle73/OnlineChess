@@ -21,33 +21,56 @@ SQUARE = 80
 BUFFER_LEFT = 60
 BUFFER_BOTTOM = 110
 pygame.display.set_caption("ChessOnline")
+checkmate_color = ""
 
-img = pygame.image.load("./static/bishop.png")
-img = pygame.transform.scale(img, (80, 80))
+whitePawn = pygame.image.load("./static/whitePawn.png")
+blackPawn = pygame.image.load("./static/blackPawn.png")
+whiteRook = pygame.image.load("./static/whiteRook.png")
+blackRook = pygame.image.load("./static/blackRook.png")
+whiteKnight = pygame.image.load("./static/whiteKnight.png")
+blackKnight = pygame.image.load("./static/blackKnight.png")
+whiteBishop = pygame.image.load("./static/whiteBishop.png")
+blackBishop = pygame.image.load("./static/blackBishop.png")
+whiteQueen = pygame.image.load("./static/whiteQueen.png")
+blackQueen = pygame.image.load("./static/blackQueen.png")
+whiteKing = pygame.image.load("./static/whiteKing.png")
+blackKing = pygame.image.load("./static/blackKing.png")
+
 
 def get_pieces(buttons):
     pieces = []
     for button in buttons:
         color = ""
         if button.value[1] == "1" or button.value[1] == "8":
-
-            color = "white" if button.value[1] == "1" else "black"
-
             if button.value[0] == "A" or button.value[0] == "H":
-                pieces.append(Piece(img, (button.x, button.y), button.value, color, "rook"))
+                if button.value[1] == "1":
+                    pieces.append(Piece(whiteRook, (button.x, button.y), button.value, "white", "rook"))
+                else:
+                    pieces.append(Piece(blackRook, (button.x, button.y), button.value, "white", "rook"))
             elif button.value[0] == "B" or button.value[0] == "G":
-                pieces.append(Piece(img, (button.x, button.y), button.value, color, "knight"))
+                if button.value[1] == "1":
+                    pieces.append(Piece(whiteKnight, (button.x, button.y), button.value, "white", "knight"))
+                else:
+                    pieces.append(Piece(blackKnight, (button.x, button.y), button.value, "white", "knight"))
             elif button.value[0] == "C" or button.value[0] == "F":
-                pieces.append(Piece(img, (button.x, button.y), button.value, color, "bishop"))
+                if button.value[1] == "1":
+                    pieces.append(Piece(whiteBishop, (button.x, button.y), button.value, "white", "bishop"))
+                else:
+                    pieces.append(Piece(blackBishop, (button.x, button.y), button.value, "white", "bishop"))
             elif button.value[0] == "D":
-                pieces.append(Piece(img, (button.x, button.y), button.value, color, "queen"))
+                if button.value[1] == "1":
+                    pieces.append(Piece(whiteQueen, (button.x, button.y), button.value, "white", "queen"))
+                else:
+                    pieces.append(Piece(blackQueen, (button.x, button.y), button.value, "white", "queen"))
             elif button.value[0] == "E":
-                pieces.append(Piece(img, (button.x, button.y), button.value, color, "king"))
-
+                if button.value[1] == "1":
+                    pieces.append(Piece(whiteKing, (button.x, button.y), button.value, "white", "king"))
+                else:
+                    pieces.append(Piece(blackKing, (button.x, button.y), button.value, "white", "king"))
         elif button.value[1] == "2":
-            pieces.append(Piece(img, (button.x, button.y), button.value, "white", "pawn"))
+            pieces.append(Piece(whitePawn, (button.x, button.y), button.value, "white", "pawn"))
         elif button.value[1] == "7":
-            pieces.append(Piece(img, (button.x, button.y), button.value, "black", "pawn"))
+            pieces.append(Piece(blackPawn, (button.x, button.y), button.value, "black", "pawn"))
     return pieces
 
 
@@ -111,12 +134,15 @@ def receive_first(buttons, pieces):
                     piece.pos = newPos
                     piece.value = button.value
 
-def receive(buttons, pieces, turn):
+def receive(buttons, pieces, turn, color):
+    global checkmate_color
     while True:
         ans = client.recv(64).decode('UTF-8')
-
-        if ans == "SET" or ans == "SET CHECK":
-            print(ans)
+        if "SET" in ans and "Pos" not in ans:
+            if "1" in ans:
+                for piece in pieces:
+                    if piece.value == turn['pos2']:
+                        piece.pos = (1000, 1000)
             for piece in pieces:
                 if piece.value == turn["pos1"]:
                     for button in buttons:
@@ -125,10 +151,26 @@ def receive(buttons, pieces, turn):
                             piece.pos = newPos
                             piece.value = button.value
             continue
-        elif "CHECKMATE" in ans:
-            print(ans)
+        elif "CHECKMATE" in ans and "Pos" not in ans:
+            checkmate_color = "opponent"
+            for piece in pieces:
+                if piece.value == turn["pos1"]:
+                    for button in buttons:
+                        if button.value == turn["pos2"]:
+                            newPos = (button.x, button.y)
+                            piece.pos = newPos
+                            piece.value = button.value
+            break
         try:
             ans = json.loads(ans)
+            if len(ans) == 4 or len(ans) == 3:
+                print(ans['Option1'])
+                if ans['Option1'] == "CHECKMATE":
+                    checkmate_color = "me"
+                if ans['Option2'] == "1":
+                    for piece in pieces:
+                        if piece.value == ans['Pos2']:
+                            piece.pos = (1000, 1000)
             for piece in pieces:
                 if piece.value == ans["Pos1"]:
                     for button in buttons:
@@ -137,7 +179,7 @@ def receive(buttons, pieces, turn):
                             piece.pos = newPos
                             piece.value = button.value
         except:
-            print(ans)
+            print("except")
         break
 
 def main(buttons, draw_nums, draw_chars, client, color):
@@ -158,7 +200,7 @@ def main(buttons, draw_nums, draw_chars, client, color):
                             turn["pos2"] = button.value
                             move = json.dumps(turn)
                             client.send(bytes(move, 'UTF-8'))
-                            t = threading.Thread(target=receive, args=(buttons, pieces, turn))
+                            t = threading.Thread(target=receive, args=(buttons, pieces, turn, color))
                             t.start()
                             turn = {}
 
@@ -170,7 +212,10 @@ def main(buttons, draw_nums, draw_chars, client, color):
         draw_GRID
         for piece in pieces:
             screen.blit(piece.img, piece.pos)
-            message_to_screen(piece.type, (255, 0, 0), piece.pos, Font)
+        if checkmate_color == "opponent":
+            message_to_screen("CHECKMATE! you win!", (0, 255, 0), (50, 50), Font)
+        elif checkmate_color == "me":
+            message_to_screen("CHECKMATE! you loose!", (255, 0, 0), (50, 50), Font)
         pygame.display.update()
 
         if color == "black" and first:

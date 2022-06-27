@@ -1,12 +1,6 @@
 package chess
 
 
-/*
-checkmate Private
-check Private
-*/
-
-
 type Game struct {
   positions  map[string]Position
   pieces     [32]Piece
@@ -44,12 +38,39 @@ func isCheck(g Game) string {
   return "none"
 }
 
-func isCheckmate(g Game) string {
-  return "none"
+func isCheckmate(g Game, color string) bool {
+  for _, piece := range g.pieces {
+    if piece.getColor() == color{
+      for _, position := range piece.getPossibleSteps(g) {
+        var cachePosition Position = piece.getPosition()
+        piece.setPosition(position)
+        //check throwout
+        for _, otherPiece := range g.pieces {
+          if otherPiece.getColor() != color && otherPiece.getPosition() == position {
+            var nilPos Position = Position{0, 0}
+            otherPiece.setPosition(nilPos)
+          } else if otherPiece.getColor() == color && otherPiece.getPosition() == position {
+            piece.setPosition(cachePosition)
+            continue
+          }
+        }
+
+        if isCheck(g) == color {
+          piece.setPosition(cachePosition)
+          continue
+        } else if isCheck(g) != color {
+          piece.setPosition(cachePosition)
+          return false
+        }
+      }
+    }
+  }
+  return true
 }
 
 
-func SetPiece(p1 string, p2 string, g Game) (game Game, msg string){
+func SetPiece(p1 string, p2 string, g Game) (game Game, msg string, opt string){
+  opt = "0"
   if p1 == p2 {
     game, msg = g, "INVALID, TRY AGAIN"
     return
@@ -84,18 +105,19 @@ func SetPiece(p1 string, p2 string, g Game) (game Game, msg string){
                   piece.setPosition(pos1)
                   game, msg = g, "INVALID, THAT WOULD BE CHECK"
                   return
-                } else if isCheckmate(g) != "none"{
-                  game, msg = g, "CHECKMATE"
-                  return
                 }else if isCheck(g) != "none"{
                   g.turn += 1
                   g.Color = getCurrentColor(g)
-                  game, msg = g, "SET CHECK"
+                  if isCheckmate(g, g.Color){
+                    game, msg, opt = g, "CHECKMATE", "1"
+                    return
+                  }
+                  game, msg, opt = g, "SET CHECK", "1"
                   return
                 }else{
                   g.turn += 1
                   g.Color = getCurrentColor(g)
-                  game, msg = g, "SET"
+                  game, msg, opt = g, "SET", "1"
                   return
                 }
               }
@@ -107,12 +129,13 @@ func SetPiece(p1 string, p2 string, g Game) (game Game, msg string){
             piece.setPosition(pos1)
             game, msg = g, "INVALID, THAT WOULD BE CHECK"
             return
-          } else if isCheckmate(g) != "none"{
-            game, msg = g, "CHECKMATE"
-            return
           }else if isCheck(g) != "none"{
             g.turn += 1
             g.Color = getCurrentColor(g)
+            if isCheckmate(g, g.Color) {
+              game, msg = g, "CHECKMATE"
+              return
+            }
             game, msg = g, "SET CHECK"
             return
           }else {
